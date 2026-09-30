@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>Student Management System</h1>
+
+    <h2>Add Student</h2>
+
+    <form action="/students" method="POST">
+
+        <label>Name:</label>
+        <input type="text" name="name" required>
+
+        <br><br>
+
+        <label>Email:</label>
+        <input type="email" name="email" required>
+
+        <br><br>
+
+        <label>Phone:</label>
+        <input type="text" name="phone" required>
+
+        <br><br>
+
+        <label>Course:</label>
+        <input type="text" name="course" required>
+
+        <br><br>
+
+        <button type="submit">Add Student</button>
+
+    </form>
+
+
+    <h2>Students</h2>
+
+    <table border="1" cellpadding="10">
+
+        <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Course</th>
+                <th>Actions</th>
+            </tr>
+
+        </thead>
+
+        <tbody id="studentTable">
+
+        </tbody>
+
+    </table>
+
+
+    <script>
+
+        // READ - Load students
+        fetch("/students")
+
+            .then(response => response.json())
+
+            .then(students => {
+
+                const table = document.getElementById("studentTable");
+
+                students.forEach(student => {
+
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                        <td>${student.id}</td>
+                        <td>${student.name}</td>
+                        <td>${student.email}</td>
+                        <td>${student.phone}</td>
+                        <td>${student.course}</td>
+
+                        <td>
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </td>
+                    `;
+
+
+                    // EDIT button
+                    const editButton = row.querySelector(".edit-btn");
+
+                    editButton.addEventListener("click", () => {
+
+                        const name = prompt(
+                            "Enter name:",
+                            student.name
+                        );
+
+                        const email = prompt(
+                            "Enter email:",
+                            student.email
+                        );
+
+                        const phone = prompt(
+                            "Enter phone:",
+                            student.phone
+                        );
+
+                        const course = prompt(
+                            "Enter course:",
+                            student.course
+                        );
+
+
+                        // Cancel update if user presses Cancel
+                        if (
+                            name === null ||
+                            email === null ||
+                            phone === null ||
+                            course === null
+                        ) {
+                            return;
+                        }
+
+
+                        // UPDATE request
+                        fetch(`/students/${student.id}`, {
+
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                name: name,
+                                email: email,
+                                phone: phone,
+                                course: course
+
+                            })
+
+                        })
+
+                        .then(response => response.json())
+
+                        .then(data => {
+
+                            alert(data.message);
+
+                            location.reload();
+
+                        })
+
+                        .catch(error => {
+
+                            console.error(
+                                "Error updating student:",
+                                error
+                            );
+
+                        });
+
+                    });
+
+
+                    // DELETE button
+                    const deleteButton =
+                        row.querySelector(".delete-btn");
+
+
+                    deleteButton.addEventListener("click", () => {
+
+                        const confirmDelete = confirm(
+                            `Are you sure you want to delete ${student.name}?`
+                        );
+
+
+                        if (!confirmDelete) {
+                            return;
+                        }
+
+
+                        // DELETE request
+                        fetch(`/students/${student.id}`, {
+
+                            method: "DELETE"
+
+                        })
+
+                        .then(response => response.json())
+
+                        .then(data => {
+
+                            alert(data.message);
+
+                            location.reload();
+
+                        })
+
+                        .catch(error => {
+
+                            console.error(
+                                "Error deleting student:",
+                                error
+                            );
+
+                        });
+
+                    });
+
+
+                    table.appendChild(row);
+
+                });
+
+            })
+
+            .catch(error => {
+
+                console.error(
+                    "Error loading students:",
+                    error
+                );
+
+            });
+
+    </script>
+
+</body>
+</html>
